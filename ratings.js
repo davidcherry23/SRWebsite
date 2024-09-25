@@ -1,12 +1,13 @@
-const API_KEY = 'AIzaSyBfoy9gpe6UHjolsmoi9kAx-iapdYs1-_U'; // Your API Key
-const SPREADSHEET_ID = '1ydvb4lhemogHl50TYHS2gHwf_Ki3-YfOQhG15QcsIXA'; // Your Spreadsheet ID
+const SPREADSHEET_ID = '1ydvb4lhemogHl50TYHS2gHwf_Ki3-YfOQhG15QcsIXA';
+const API_KEY = 'AIzaSyBfoy9gpe6UHjolsmoi9kAx-iapdYs1-_U';
 
 async function fetchData(sheetName) {
-    const range = `${sheetName}!A1:Z100`; // Adjust the range as necessary
+    const range = `${sheetName}!A1:Z600`; // Fetch rows from 1 to 600
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}?key=${API_KEY}`;
 
     try {
         const response = await axios.get(url);
+        console.log(`Fetched ${response.data.values.length} rows from ${sheetName}`);
         return response.data.values; // Return the rows of your sheet
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -60,6 +61,3 @@ async function loadRatings() {
 
 // Call the loadRatings function to populate the ratings table
 loadRatings();
-
-// Load ratings when the DOM is fully loaded
-document.addEventListener('DOMContentLoaded', loadRatings);

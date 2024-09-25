@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Horse Racing Ratings</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 </head>
 <body>
     <header>
@@ -12,7 +13,7 @@
     </header>
     <main>
         <form id="uploadForm">
-            <input type="file" id="fileInput" accept=".csv" required>
+            <input type="file" id="fileInput" accept=".xlsx" required>
             <button type="submit">Upload Ratings</button>
         </form>
         <div id="raceList"></div>

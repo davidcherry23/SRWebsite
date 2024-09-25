@@ -23,7 +23,9 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
                             if (!flatTimes[track]) {
                                 flatTimes[track] = [];
                             }
-                            flatTimes[track].push(time);
+                            if (!flatTimes[track].includes(time)) {
+                                flatTimes[track].push(time);
+                            }
                         }
                     });
                 } else if (lines[0][0] === 'Time' && lines[0][1] === 'Track') {
@@ -34,7 +36,9 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
                             if (!nhTimes[track]) {
                                 nhTimes[track] = [];
                             }
-                            nhTimes[track].push(time);
+                            if (!nhTimes[track].includes(time)) {
+                                nhTimes[track].push(time);
+                            }
                         }
                     });
                 }
@@ -56,26 +60,31 @@ function displayRaceList(flatTimes, nhTimes) {
     for (const [track, times] of Object.entries(combinedTimes)) {
         const raceItem = document.createElement('div');
         raceItem.className = 'track-item';
-        raceItem.innerHTML = `${track}: ${times.join(', ')}`;
+        const raceLinks = times.map(time => {
+            return `<a href="ratings.html" onclick="loadRatings('${track}', '${time}')">${time}</a>`;
+        }).join(', ');
+        raceItem.innerHTML = `${track}: ${raceLinks}`;
         raceList.appendChild(raceItem);
     }
 }
 
-function loadRatings() {
+function loadRatings(track, time) {
     const ratingsBody = document.getElementById('ratingsBody');
     ratingsBody.innerHTML = ''; // Clear previous data
 
-    // Retrieve race data from localStorage
+    // Retrieve race data from the uploaded CSV file
     const raceData = JSON.parse(localStorage.getItem('raceData'));
     if (raceData) {
         raceData.forEach(row => {
-            const newRow = document.createElement('tr');
-            row.forEach((cell, index) => {
-                const newCell = document.createElement('td');
-                newCell.textContent = cell;
-                newRow.appendChild(newCell);
-            });
-            ratingsBody.appendChild(newRow);
+            if (row[1] === track && row[0] === time) {
+                const newRow = document.createElement('tr');
+                row.forEach(cell => {
+                    const newCell = document.createElement('td');
+                    newCell.textContent = cell;
+                    newRow.appendChild(newCell);
+                });
+                ratingsBody.appendChild(newRow);
+            }
         });
     }
 }

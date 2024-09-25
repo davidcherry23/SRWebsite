@@ -1,62 +1,64 @@
-document.getElementById('uploadForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const fileInput = document.getElementById('fileInput');
-    const file = fileInput.files[0];
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
 
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const data = new Uint8Array(event.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
 
-            const flatTimes = {};
-            const nhTimes = {};
-            const ratingsData = []; // To store all ratings data
+                const flatTimes = {};
+                const nhTimes = {};
+                const ratingsData = []; // To store all ratings data
 
-            // Process FLAT sheet
-            const flatSheet = workbook.Sheets['FLAT'];
-            if (flatSheet) {
-                const flatData = XLSX.utils.sheet_to_json(flatSheet, { header: 1 });
-                flatData.slice(1).forEach(row => {
-                    if (row.length > 1) {
-                        const [time, track] = [row[0], row[1]];
-                        if (!flatTimes[track]) {
-                            flatTimes[track] = [];
+                // Process FLAT sheet
+                const flatSheet = workbook.Sheets['FLAT'];
+                if (flatSheet) {
+                    const flatData = XLSX.utils.sheet_to_json(flatSheet, { header: 1 });
+                    flatData.slice(1).forEach(row => {
+                        if (row.length > 1) {
+                            const [time, track] = [row[0], row[1]];
+                            if (!flatTimes[track]) {
+                                flatTimes[track] = [];
+                            }
+                            if (!flatTimes[track].includes(time)) {
+                                flatTimes[track].push(time);
+                            }
+                            ratingsData.push(row); // Store the complete row data
                         }
-                        if (!flatTimes[track].includes(time)) {
-                            flatTimes[track].push(time);
+                    });
+                }
+
+                // Process NH sheet
+                const nhSheet = workbook.Sheets['NH'];
+                if (nhSheet) {
+                    const nhData = XLSX.utils.sheet_to_json(nhSheet, { header: 1 });
+                    nhData.slice(1).forEach(row => {
+                        if (row.length > 1) {
+                            const [time, track] = [row[0], row[1]];
+                            if (!nhTimes[track]) {
+                                nhTimes[track] = [];
+                            }
+                            if (!nhTimes[track].includes(time)) {
+                                nhTimes[track].push(time);
+                            }
+                            ratingsData.push(row); // Store the complete row data
                         }
-                        ratingsData.push(row); // Store the complete row data
-                    }
-                });
-            }
+                    });
+                }
 
-            // Process NH sheet
-            const nhSheet = workbook.Sheets['NH'];
-            if (nhSheet) {
-                const nhData = XLSX.utils.sheet_to_json(nhSheet, { header: 1 });
-                nhData.slice(1).forEach(row => {
-                    if (row.length > 1) {
-                        const [time, track] = [row[0], row[1]];
-                        if (!nhTimes[track]) {
-                            nhTimes[track] = [];
-                        }
-                        if (!nhTimes[track].includes(time)) {
-                            nhTimes[track].push(time);
-                        }
-                        ratingsData.push(row); // Store the complete row data
-                    }
-                });
-            }
+                // Store ratings data in localStorage for later use
+                localStorage.setItem('raceData', JSON.stringify(ratingsData));
 
-            // Store ratings data in localStorage for later use
-            localStorage.setItem('raceData', JSON.stringify(ratingsData));
+                displayRaceList(flatTimes, nhTimes);
+            };
 
-            displayRaceList(flatTimes, nhTimes);
-        };
-
-        reader.readAsArrayBuffer(file);
-    }
+            reader.readAsArrayBuffer(file);
+        }
+    });
 });
 
 function displayRaceList(flatTimes, nhTimes) {

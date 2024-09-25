@@ -1,99 +1,45 @@
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOM fully loaded and parsed");
-    
-    // Log the available DOM elements for debugging
-    console.log("Available DOM elements:", document.body.innerHTML);
+const API_KEY = 'api AIzaSyBfoy9gpe6UHjolsmoi9kAx-iapdYs1-_U'; // Replace with your API Key
+const SPREADSHEET_ID = '1ydvb4lhemogHl50TYHS2gHwf_Ki3-YfOQhG15QcsIXA; // Replace with your Spreadsheet ID
 
-    const uploadForm = document.getElementById('uploadForm');
-    if (!uploadForm) {
-        console.error("Upload form not found!");
-        return;
+async function fetchData(sheetName) {
+    const range = `${sheetName}!A1:Z100`; // Adjust the range as necessary
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}?key=${API_KEY}`;
+
+    try {
+        const response = await axios.get(url);
+        const data = response.data.values; // This will contain the rows of your sheet
+        displayRaceList(data);
+    } catch (error) {
+        console.error('Error fetching data:', error);
     }
+}
 
-    uploadForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const fileInput = document.getElementById('fileInput');
-        const file = fileInput.files[0];
+function displayRaceList(data) {
+    const raceListDiv = document.getElementById('raceList');
+    // Clear existing race list
+    raceListDiv.innerHTML = '';
 
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                console.log("File read successfully");
-                const data = new Uint8Array(event.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-
-                const flatTimes = {};
-                const nhTimes = {};
-                const ratingsData = []; // To store all ratings data
-
-                // Process FLAT sheet
-                const flatSheet = workbook.Sheets['FLAT'];
-                if (flatSheet) {
-                    const flatData = XLSX.utils.sheet_to_json(flatSheet, { header: 1 });
-                    flatData.slice(1).forEach(row => {
-                        if (row.length > 1) {
-                            const [time, track] = [row[0], row[1]];
-                            if (!flatTimes[track]) {
-                                flatTimes[track] = [];
-                            }
-                            if (!flatTimes[track].includes(time)) {
-                                flatTimes[track].push(time);
-                            }
-                            ratingsData.push(row); // Store the complete row data
-                        }
-                    });
-                } else {
-                    console.error("FLAT sheet not found!");
-                }
-
-                // Process NH sheet
-                const nhSheet = workbook.Sheets['NH'];
-                if (nhSheet) {
-                    const nhData = XLSX.utils.sheet_to_json(nhSheet, { header: 1 });
-                    nhData.slice(1).forEach(row => {
-                        if (row.length > 1) {
-                            const [time, track] = [row[0], row[1]];
-                            if (!nhTimes[track]) {
-                                nhTimes[track] = [];
-                            }
-                            if (!nhTimes[track].includes(time)) {
-                                nhTimes[track].push(time);
-                            }
-                            ratingsData.push(row); // Store the complete row data
-                        }
-                    });
-                } else {
-                    console.error("NH sheet not found!");
-                }
-
-                // Store ratings data in localStorage for later use
-                localStorage.setItem('raceData', JSON.stringify(ratingsData));
-                console.log("Race data stored in localStorage");
-
-                displayRaceList(flatTimes, nhTimes);
-            };
-
-            reader.readAsArrayBuffer(file);
-        } else {
-            console.error("No file selected");
-        }
+    // Logic to create your race list based on data
+    data.forEach((row, index) => {
+        if (index === 0) return; // Skip header row
+        const time = row[0]; // Adjust based on your sheet structure
+        const track = row[1]; // Adjust based on your sheet structure
+        const raceItem = document.createElement('div');
+        raceItem.innerHTML = `<a href="#" onclick="loadRatings('${time}', '${track}')">${track} ${time}</a>`;
+        raceListDiv.appendChild(raceItem);
     });
+}
+
+// Load the FLAT sheet initially when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => {
+    fetchData('FLAT'); // Call for the FLAT sheet initially
 });
 
-function displayRaceList(flatTimes, nhTimes) {
-    const raceList = document.getElementById('raceList');
-    raceList.innerHTML = ''; // Clear previous data
+// Function to load ratings based on time and track
+function loadRatings(time, track) {
+    const ratingsTable = document.getElementById('ratingsTable');
+    ratingsTable.innerHTML = ''; // Clear existing ratings
 
-    const combinedTimes = { ...flatTimes, ...nhTimes }; // Merge both objects
-    console.log("Combined race times:", combinedTimes);
-
-    for (const [track, times] of Object.entries(combinedTimes)) {
-        const raceItem = document.createElement('div');
-        raceItem.className = 'track-item';
-        const raceLinks = times.map(time => {
-            return `<a href="ratings.html?track=${encodeURIComponent(track)}&time=${encodeURIComponent(time)}">${time}</a>`;
-        }).join(', ');
-        raceItem.innerHTML = `${track}: ${raceLinks}`;
-        raceList.appendChild(raceItem);
-    }
+    // Fetch ratings from the specific sheet (implement this based on your needs)
+    fetchData('FLAT'); // Fetch the FLAT ratings again, or you can implement logic for NH ratings
 }

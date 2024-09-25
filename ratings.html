@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Race Ratings</title>
+    <title>Horse Racing Ratings</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
     <header>
-        <h1>Race Ratings</h1>
+        <h1>Horse Race Ratings</h1>
     </header>
     <main>
-        <table id="ratingsTable" style="display: none;">
+        <table id="ratingsTable">
             <thead>
                 <tr>
                     <th>Time</th>
@@ -39,6 +38,6 @@
         </table>
         <button onclick="window.history.back()">Back to Homepage</button>
     </main>
-    <script src="ratings.js"></script>
+    <script src="ratings.js"></script> <!-- This should be at the bottom -->
 </body>
 </html>

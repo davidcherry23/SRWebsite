@@ -1,5 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    console.log("DOM fully loaded and parsed");
+
+    const uploadForm = document.getElementById('uploadForm');
+    if (!uploadForm) {
+        console.error("Upload form not found!");
+        return;
+    }
+
+    uploadForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const fileInput = document.getElementById('fileInput');
         const file = fileInput.files[0];
@@ -7,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (file) {
             const reader = new FileReader();
             reader.onload = function(event) {
+                console.log("File read successfully");
                 const data = new Uint8Array(event.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
 
@@ -30,6 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             ratingsData.push(row); // Store the complete row data
                         }
                     });
+                } else {
+                    console.error("FLAT sheet not found!");
                 }
 
                 // Process NH sheet
@@ -48,15 +59,20 @@ document.addEventListener('DOMContentLoaded', () => {
                             ratingsData.push(row); // Store the complete row data
                         }
                     });
+                } else {
+                    console.error("NH sheet not found!");
                 }
 
                 // Store ratings data in localStorage for later use
                 localStorage.setItem('raceData', JSON.stringify(ratingsData));
+                console.log("Race data stored in localStorage");
 
                 displayRaceList(flatTimes, nhTimes);
             };
 
             reader.readAsArrayBuffer(file);
+        } else {
+            console.error("No file selected");
         }
     });
 });
@@ -66,6 +82,7 @@ function displayRaceList(flatTimes, nhTimes) {
     raceList.innerHTML = ''; // Clear previous data
 
     const combinedTimes = { ...flatTimes, ...nhTimes }; // Merge both objects
+    console.log("Combined race times:", combinedTimes);
 
     for (const [track, times] of Object.entries(combinedTimes)) {
         const raceItem = document.createElement('div');
@@ -84,6 +101,8 @@ function loadRatings(track, time) {
 
     // Retrieve race data from localStorage
     const raceData = JSON.parse(localStorage.getItem('raceData'));
+    console.log("Loaded race data from localStorage:", raceData);
+
     if (raceData) {
         raceData.forEach(row => {
             // Check if both track and time match
@@ -97,5 +116,7 @@ function loadRatings(track, time) {
                 ratingsBody.appendChild(newRow); // Append the row to the table body
             }
         });
+    } else {
+        console.error("No race data found in localStorage!");
     }
 }

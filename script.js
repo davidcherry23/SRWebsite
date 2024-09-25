@@ -1,12 +1,14 @@
-const API_KEY = 'api AIzaSyBfoy9gpe6UHjolsmoi9kAx-iapdYs1-_U'; // Replace with your API Key
-const SPREADSHEET_ID = '1ydvb4lhemogHl50TYHS2gHwf_Ki3-YfOQhG15QcsIXA; // Replace with your Spreadsheet ID
+const API_KEY = 'AIzaSyBfoy9gpe6UHjolsmoi9kAx-iapdYs1-_U'; // Your API Key
+const SPREADSHEET_ID = '1ydvb4lhemogHl50TYHS2gHwf_Ki3-YfOQhG15QcsIXA'; // Your Spreadsheet ID
 
 async function fetchData(sheetName) {
+    console.log(`Fetching data for sheet: ${sheetName}`);
     const range = `${sheetName}!A1:Z100`; // Adjust the range as necessary
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}?key=${API_KEY}`;
 
     try {
         const response = await axios.get(url);
+        console.log('Data fetched successfully:', response.data);
         const data = response.data.values; // This will contain the rows of your sheet
         displayRaceList(data);
     } catch (error) {
@@ -41,5 +43,5 @@ function loadRatings(time, track) {
     ratingsTable.innerHTML = ''; // Clear existing ratings
 
     // Fetch ratings from the specific sheet (implement this based on your needs)
-    fetchData('FLAT'); // Fetch the FLAT ratings again, or you can implement logic for NH ratings
+    fetchData('FLAT'); // Fetch the FLAT ratings again, or implement logic for NH ratings
 }

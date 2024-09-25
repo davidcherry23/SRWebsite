@@ -6,19 +6,15 @@
     <title>Horse Racing Ratings</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> <!-- Add this line -->
 </head>
 <body>
     <header>
         <h1>Today's Horse Races</h1>
     </header>
     <main>
-        <form id="uploadForm">
-            <input type="file" id="fileInput" accept=".xlsx" required>
-            <button type="submit">Upload Ratings</button>
-        </form>
         <div id="raceList"></div>
+        <button onclick="window.history.back()">Back to Homepage</button>
     </main>
-    <script src="script.js"></script>
+    <script src="script.js"></script> <!-- This should be at the bottom -->
 </body>
 </html>

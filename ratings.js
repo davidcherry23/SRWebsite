@@ -1,65 +1,52 @@
-const SPREADSHEET_ID = '1ydvb4lhemogHl50TYHS2gHwf_Ki3-YfOQhG15QcsIXA';
-const API_KEY = 'AIzaSyBfoy9gpe6UHjolsmoi9kAx-iapdYs1-_U';
+const spreadsheetId = "1ydvb4lhemogHl50TYHS2gHwf_Ki3-YfOQhG15QcsIXA";
+const apiKey = "AIzaSyBfoy9gpe6UHjolsmoi9kAx-iapdYs1-_U";
+const flatRange = "FLAT!A2:O600"; // Adjusted range to include more rows
+const nhRange = "NH!A2:O600"; // Adjusted range to include more rows
 
-async function fetchData(sheetName) {
-    const range = `${sheetName}!A1:Z600`; // Fetch rows from 1 to 600
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}?key=${API_KEY}`;
+async function fetchData(range) {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`;
+    const response = await axios.get(url);
+    return response.data.values || [];
+}
 
+async function loadRatings(track, time) {
     try {
-        const response = await axios.get(url);
-        console.log(`Fetched ${response.data.values.length} rows from ${sheetName}`);
-        return response.data.values; // Return the rows of your sheet
-    } catch (error) {
-        console.error('Error fetching data:', error);
-        return []; // Return an empty array on error
-    }
-}
+        const flatData = await fetchData(flatRange);
+        const nhData = await fetchData(nhRange);
 
-async function loadRatings() {
-    const params = new URLSearchParams(window.location.search);
-    const selectedTrack = params.get('track');
-    const selectedTime = params.get('time');
+        console.log(`Fetched ${flatData.length} rows from FLAT`);
+        console.log(`Fetched ${nhData.length} rows from NH`);
 
-    console.log(`Loading ratings for Track: ${selectedTrack}, Time: ${selectedTime}`); // Log the parameters
-
-    const flatData = await fetchData('FLAT');
-    const nhData = await fetchData('NH');
-
-    const allData = [...flatData, ...nhData];
-    const filteredData = allData.filter(row => row[1] === selectedTrack && row[0] === selectedTime); // Filter based on selected track and time
-
-    console.log(`Filtered Ratings: ${JSON.stringify(filteredData)}`); // Log the filtered data
-
-    const ratingsBody = document.getElementById('ratingsBody');
-    ratingsBody.innerHTML = ''; // Clear previous ratings
-
-    console.log('Filtered Data to be displayed:', filteredData); // Debug log for filtered data
-
-    if (filteredData.length > 0) {
-        filteredData.forEach(row => {
-            const ratingRow = `<tr>
-                <td>${row[0]}</td>
-                <td>${row[1]}</td>
-                <td>${row[2]}</td>
-                <td>${row[3]}</td>
-                <td>${row[4]}</td>
-                <td>${row[5]}</td>
-                <td>${row[6]}</td>
-                <td>${row[7]}</td>
-                <td>${row[8]}</td>
-                <td>${row[9]}</td>
-                <td>${row[10]}</td>
-                <td>${row[11]}</td>
-                <td>${row[12]}</td>
-                <td>${row[13]}</td>
-                <td>${row[14]}</td>
-            </tr>`;
-            ratingsBody.innerHTML += ratingRow;
+        const filteredRatings = flatData.concat(nhData).filter(row => {
+            return row[0] === time && row[1] === track;
+        }).map(row => {
+            return row.map(value => value === undefined ? "" : value); // Leave blank if undefined
         });
-    } else {
-        ratingsBody.innerHTML = '<tr><td colspan="15">No ratings available for this race.</td></tr>'; // Message if no ratings
+
+        console.log("Filtered Ratings:", filteredRatings);
+
+        const ratingsBody = document.getElementById("ratingsBody");
+        ratingsBody.innerHTML = ""; // Clear existing data
+
+        if (filteredRatings.length > 0) {
+            filteredRatings.forEach(row => {
+                const newRow = document.createElement("tr");
+                row.forEach(cell => {
+                    const newCell = document.createElement("td");
+                    newCell.textContent = cell === undefined ? "" : cell; // Leave blank if undefined
+                    newRow.appendChild(newCell);
+                });
+                ratingsBody.appendChild(newRow);
+            });
+        } else {
+            const noDataRow = document.createElement("tr");
+            const noDataCell = document.createElement("td");
+            noDataCell.colSpan = 15; // Adjust according to your number of columns
+            noDataCell.textContent = "No ratings available.";
+            noDataRow.appendChild(noDataCell);
+            ratingsBody.appendChild(noDataRow);
+        }
+    } catch (error) {
+        console.error("Error fetching data:", error);
     }
 }
-
-// Call the loadRatings function to populate the ratings table
-loadRatings();

@@ -4,9 +4,14 @@ const flatRange = "FLAT!A2:O600"; // Adjusted range to include more rows
 const nhRange = "NH!A2:O600"; // Adjusted range to include more rows
 
 async function fetchData(range) {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`;
-    const response = await axios.get(url);
-    return response.data.values || [];
+    try {
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`;
+        const response = await axios.get(url);
+        return response.data.values || [];
+    } catch (error) {
+        console.error("Error fetching data:", error);
+        return [];
+    }
 }
 
 async function loadRatings(track, time) {
@@ -17,10 +22,9 @@ async function loadRatings(track, time) {
         console.log(`Fetched ${flatData.length} rows from FLAT`);
         console.log(`Fetched ${nhData.length} rows from NH`);
 
+        // Filter data based on track and time
         const filteredRatings = flatData.concat(nhData).filter(row => {
             return row[0] === time && row[1] === track;
-        }).map(row => {
-            return row.map(value => value === undefined ? "" : value); // Leave blank if undefined
         });
 
         console.log("Filtered Ratings:", filteredRatings);
@@ -31,9 +35,9 @@ async function loadRatings(track, time) {
         if (filteredRatings.length > 0) {
             filteredRatings.forEach(row => {
                 const newRow = document.createElement("tr");
-                row.forEach(cell => {
+                row.forEach(value => {
                     const newCell = document.createElement("td");
-                    newCell.textContent = cell === undefined ? "" : cell; // Leave blank if undefined
+                    newCell.textContent = value === undefined ? "" : value; // Leave blank if undefined
                     newRow.appendChild(newCell);
                 });
                 ratingsBody.appendChild(newRow);
@@ -47,6 +51,19 @@ async function loadRatings(track, time) {
             ratingsBody.appendChild(noDataRow);
         }
     } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error loading ratings:", error);
     }
 }
+
+// Ensure loadRatings is called with appropriate arguments when the page loads
+window.onload = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const track = urlParams.get('track');
+    const time = urlParams.get('time');
+    
+    if (track && time) {
+        loadRatings(track, time);
+    } else {
+        console.error("Track or Time parameter is missing in the URL.");
+    }
+};

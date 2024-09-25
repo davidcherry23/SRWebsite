@@ -5,13 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Race Ratings</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
     <header>
         <h1>Race Ratings</h1>
     </header>
     <main>
-        <table id="ratingsTable">
+        <table id="ratingsTable" style="display: none;">
             <thead>
                 <tr>
                     <th>Time</th>
@@ -37,31 +39,6 @@
         </table>
         <button onclick="window.history.back()">Back to Homepage</button>
     </main>
-    <script>
-        // Get URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const track = urlParams.get('track');
-        const time = urlParams.get('time');
-
-        // Load ratings based on track and time
-        const ratingsBody = document.getElementById('ratingsBody');
-        const raceData = JSON.parse(localStorage.getItem('raceData')) || [];
-
-        raceData.forEach(row => {
-            if (row[1] === track && row[0] === time) {
-                const newRow = document.createElement('tr');
-                row.forEach(cell => {
-                    const newCell = document.createElement('td');
-                    newCell.textContent = cell; // Display cell content
-                    newRow.appendChild(newCell);
-                });
-                ratingsBody.appendChild(newRow); // Append the row to the table body
-            }
-        });
-
-        if (ratingsBody.innerHTML === '') {
-            ratingsBody.innerHTML = '<tr><td colspan="15">No ratings found for this race.</td></tr>';
-        }
-    </script>
+    <script src="ratings.js"></script>
 </body>
 </html>

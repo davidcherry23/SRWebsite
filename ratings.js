@@ -33,6 +33,8 @@ async function loadRatings() {
     const ratingsBody = document.getElementById('ratingsBody');
     ratingsBody.innerHTML = ''; // Clear previous ratings
 
+    console.log('Filtered Data to be displayed:', filteredData); // Debug log for filtered data
+
     if (filteredData.length > 0) {
         filteredData.forEach(row => {
             const ratingRow = `<tr>

@@ -6,48 +6,48 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
     if (file) {
         const reader = new FileReader();
         reader.onload = function(event) {
-            const content = event.target.result;
-            const sheets = content.split(/(?=FLAT)|(?=NH)/); // Split content by sheets
+            const data = new Uint8Array(event.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
 
             const flatTimes = {};
             const nhTimes = {};
             const ratingsData = []; // To store all ratings data
 
-            sheets.forEach(sheet => {
-                const lines = sheet.split('\n').map(line => line.split(','));
-
-                // Extract data from FLAT sheet
-                if (lines[0][0] === 'Time' && lines[0][1] === 'Track') {
-                    lines.slice(1).forEach(row => {
-                        if (row.length > 1) {
-                            const [time, track] = [row[0], row[1]];
-                            if (!flatTimes[track]) {
-                                flatTimes[track] = [];
-                            }
-                            if (!flatTimes[track].includes(time)) {
-                                flatTimes[track].push(time);
-                            }
-                            ratingsData.push(row); // Store the complete row data
+            // Process FLAT sheet
+            const flatSheet = workbook.Sheets['FLAT'];
+            if (flatSheet) {
+                const flatData = XLSX.utils.sheet_to_json(flatSheet, { header: 1 });
+                flatData.slice(1).forEach(row => {
+                    if (row.length > 1) {
+                        const [time, track] = [row[0], row[1]];
+                        if (!flatTimes[track]) {
+                            flatTimes[track] = [];
                         }
-                    });
-                }
-
-                // Extract data from NH sheet
-                else if (lines[0][0] === 'Time' && lines[0][1] === 'Track') {
-                    lines.slice(1).forEach(row => {
-                        if (row.length > 1) {
-                            const [time, track] = [row[0], row[1]];
-                            if (!nhTimes[track]) {
-                                nhTimes[track] = [];
-                            }
-                            if (!nhTimes[track].includes(time)) {
-                                nhTimes[track].push(time);
-                            }
-                            ratingsData.push(row); // Store the complete row data
+                        if (!flatTimes[track].includes(time)) {
+                            flatTimes[track].push(time);
                         }
-                    });
-                }
-            });
+                        ratingsData.push(row); // Store the complete row data
+                    }
+                });
+            }
+
+            // Process NH sheet
+            const nhSheet = workbook.Sheets['NH'];
+            if (nhSheet) {
+                const nhData = XLSX.utils.sheet_to_json(nhSheet, { header: 1 });
+                nhData.slice(1).forEach(row => {
+                    if (row.length > 1) {
+                        const [time, track] = [row[0], row[1]];
+                        if (!nhTimes[track]) {
+                            nhTimes[track] = [];
+                        }
+                        if (!nhTimes[track].includes(time)) {
+                            nhTimes[track].push(time);
+                        }
+                        ratingsData.push(row); // Store the complete row data
+                    }
+                });
+            }
 
             // Store ratings data in localStorage for later use
             localStorage.setItem('raceData', JSON.stringify(ratingsData));
@@ -55,7 +55,7 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
             displayRaceList(flatTimes, nhTimes);
         };
 
-        reader.readAsText(file);
+        reader.readAsArrayBuffer(file);
     }
 });
 

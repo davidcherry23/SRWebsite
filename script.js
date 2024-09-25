@@ -84,14 +84,15 @@ function loadRatings(track, time) {
     const raceData = JSON.parse(localStorage.getItem('raceData'));
     if (raceData) {
         raceData.forEach(row => {
+            // Check if both track and time match
             if (row[1] === track && row[0] === time) {
                 const newRow = document.createElement('tr');
                 row.forEach(cell => {
                     const newCell = document.createElement('td');
-                    newCell.textContent = cell;
+                    newCell.textContent = cell; // Display cell content
                     newRow.appendChild(newCell);
                 });
-                ratingsBody.appendChild(newRow);
+                ratingsBody.appendChild(newRow); // Append the row to the table body
             }
         });
     }

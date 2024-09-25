@@ -2,11 +2,12 @@ const API_KEY = 'AIzaSyBfoy9gpe6UHjolsmoi9kAx-iapdYs1-_U'; // Your API Key
 const SPREADSHEET_ID = '1ydvb4lhemogHl50TYHS2gHwf_Ki3-YfOQhG15QcsIXA'; // Your Spreadsheet ID
 
 async function fetchData(sheetName) {
-    const range = `${sheetName}!A1:Z100`; // Adjust the range as necessary
+    const range = `${sheetName}!A1:Z`; // Fetch all rows in the range
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}?key=${API_KEY}`;
 
     try {
         const response = await axios.get(url);
+        console.log(`Fetched ${response.data.values.length} rows from ${sheetName}`);
         return response.data.values; // Return the rows of your sheet
     } catch (error) {
         console.error('Error fetching data:', error);

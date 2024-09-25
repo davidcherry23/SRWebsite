@@ -11,12 +11,13 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
 
             const flatTimes = {};
             const nhTimes = {};
+            const ratingsData = []; // To store all ratings data
 
             sheets.forEach(sheet => {
                 const lines = sheet.split('\n').map(line => line.split(','));
 
+                // Extract data from FLAT sheet
                 if (lines[0][0] === 'Time' && lines[0][1] === 'Track') {
-                    // Extract data from FLAT sheet
                     lines.slice(1).forEach(row => {
                         if (row.length > 1) {
                             const [time, track] = [row[0], row[1]];
@@ -26,10 +27,13 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
                             if (!flatTimes[track].includes(time)) {
                                 flatTimes[track].push(time);
                             }
+                            ratingsData.push(row); // Store the complete row data
                         }
                     });
-                } else if (lines[0][0] === 'Time' && lines[0][1] === 'Track') {
-                    // Extract data from NH sheet
+                }
+
+                // Extract data from NH sheet
+                else if (lines[0][0] === 'Time' && lines[0][1] === 'Track') {
                     lines.slice(1).forEach(row => {
                         if (row.length > 1) {
                             const [time, track] = [row[0], row[1]];
@@ -39,10 +43,14 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
                             if (!nhTimes[track].includes(time)) {
                                 nhTimes[track].push(time);
                             }
+                            ratingsData.push(row); // Store the complete row data
                         }
                     });
                 }
             });
+
+            // Store ratings data in localStorage for later use
+            localStorage.setItem('raceData', JSON.stringify(ratingsData));
 
             displayRaceList(flatTimes, nhTimes);
         };
@@ -72,7 +80,7 @@ function loadRatings(track, time) {
     const ratingsBody = document.getElementById('ratingsBody');
     ratingsBody.innerHTML = ''; // Clear previous data
 
-    // Retrieve race data from the uploaded CSV file
+    // Retrieve race data from localStorage
     const raceData = JSON.parse(localStorage.getItem('raceData'));
     if (raceData) {
         raceData.forEach(row => {

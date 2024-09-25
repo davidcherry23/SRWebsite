@@ -7,37 +7,56 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
         const reader = new FileReader();
         reader.onload = function(event) {
             const content = event.target.result;
-            const lines = content.split('\n');
-            const raceData = lines.map(line => line.split(','));
+            const sheets = content.split(/(?=FLAT)|(?=NH)/); // Split content by sheets
 
-            // Store race data in localStorage for access on ratings.html
-            localStorage.setItem('raceData', JSON.stringify(raceData));
-            displayRaceList(raceData);
+            const flatTimes = {};
+            const nhTimes = {};
+
+            sheets.forEach(sheet => {
+                const lines = sheet.split('\n').map(line => line.split(','));
+
+                if (lines[0][0] === 'Time' && lines[0][1] === 'Track') {
+                    // Extract data from FLAT sheet
+                    lines.slice(1).forEach(row => {
+                        if (row.length > 1) {
+                            const [time, track] = [row[0], row[1]];
+                            if (!flatTimes[track]) {
+                                flatTimes[track] = [];
+                            }
+                            flatTimes[track].push(time);
+                        }
+                    });
+                } else if (lines[0][0] === 'Time' && lines[0][1] === 'Track') {
+                    // Extract data from NH sheet
+                    lines.slice(1).forEach(row => {
+                        if (row.length > 1) {
+                            const [time, track] = [row[0], row[1]];
+                            if (!nhTimes[track]) {
+                                nhTimes[track] = [];
+                            }
+                            nhTimes[track].push(time);
+                        }
+                    });
+                }
+            });
+
+            displayRaceList(flatTimes, nhTimes);
         };
 
         reader.readAsText(file);
     }
 });
 
-function displayRaceList(raceData) {
+function displayRaceList(flatTimes, nhTimes) {
     const raceList = document.getElementById('raceList');
     raceList.innerHTML = ''; // Clear previous data
 
-    const raceTimes = {};
-    raceData.forEach(row => {
-        if (row.length > 0 && row[0] && row[1]) {
-            const [time, track] = [row[0], row[1]];
-            if (!raceTimes[time]) {
-                raceTimes[time] = [];
-            }
-            raceTimes[time].push(track);
-        }
-    });
+    const combinedTimes = { ...flatTimes, ...nhTimes }; // Merge both objects
 
-    for (const [time, tracks] of Object.entries(raceTimes)) {
-        const trackList = tracks.join(', ');
+    for (const [track, times] of Object.entries(combinedTimes)) {
         const raceItem = document.createElement('div');
-        raceItem.innerHTML = `<a href="ratings.html" onclick="loadRatings('${time}')">${trackList} at ${time}</a>`;
+        raceItem.className = 'track-item';
+        raceItem.innerHTML = `${track}: ${times.join(', ')}`;
         raceList.appendChild(raceItem);
     }
 }

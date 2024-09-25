@@ -16,37 +16,50 @@ async function fetchData(sheetName) {
 
 async function loadRatings() {
     const params = new URLSearchParams(window.location.search);
-    const time = params.get('time');
-    const track = params.get('track');
+    const selectedTrack = params.get('track');
+    const selectedTime = params.get('time');
 
-    const ratingsBody = document.getElementById('ratingsBody');
-    ratingsBody.innerHTML = ''; // Clear existing ratings
+    console.log(`Loading ratings for Track: ${selectedTrack}, Time: ${selectedTime}`); // Log the parameters
 
-    // Show the ratings table
-    const ratingsTable = document.getElementById('ratingsTable');
-    ratingsTable.style.display = 'table'; // Show the table when loading ratings
-
-    // Fetch ratings from the FLAT sheet and NH sheet
     const flatData = await fetchData('FLAT');
     const nhData = await fetchData('NH');
 
-    // Combine data to find the correct race ratings
-    const combinedData = [...flatData, ...nhData];
+    const allData = [...flatData, ...nhData];
+    const filteredData = allData.filter(row => row[1] === selectedTrack && row[0] === selectedTime); // Filter based on selected track and time
 
-    // Find and display ratings for the selected race
-    combinedData.forEach((row, index) => {
-        if (index === 0) return; // Skip header row
-        if (row[0] === time && row[1] === track) { // Match time and track
-            const newRow = document.createElement('tr');
-            row.forEach(cell => {
-                const newCell = document.createElement('td');
-                newCell.textContent = cell;
-                newRow.appendChild(newCell);
-            });
-            ratingsBody.appendChild(newRow);
-        }
-    });
+    console.log(`Filtered Ratings: ${JSON.stringify(filteredData)}`); // Log the filtered data
+
+    const ratingsBody = document.getElementById('ratingsBody');
+    ratingsBody.innerHTML = ''; // Clear previous ratings
+
+    if (filteredData.length > 0) {
+        filteredData.forEach(row => {
+            const ratingRow = `<tr>
+                <td>${row[0]}</td>
+                <td>${row[1]}</td>
+                <td>${row[2]}</td>
+                <td>${row[3]}</td>
+                <td>${row[4]}</td>
+                <td>${row[5]}</td>
+                <td>${row[6]}</td>
+                <td>${row[7]}</td>
+                <td>${row[8]}</td>
+                <td>${row[9]}</td>
+                <td>${row[10]}</td>
+                <td>${row[11]}</td>
+                <td>${row[12]}</td>
+                <td>${row[13]}</td>
+                <td>${row[14]}</td>
+            </tr>`;
+            ratingsBody.innerHTML += ratingRow;
+        });
+    } else {
+        ratingsBody.innerHTML = '<tr><td colspan="15">No ratings available for this race.</td></tr>'; // Message if no ratings
+    }
 }
+
+// Call the loadRatings function to populate the ratings table
+loadRatings();
 
 // Load ratings when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', loadRatings);

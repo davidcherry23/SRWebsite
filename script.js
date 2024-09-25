@@ -91,35 +91,9 @@ function displayRaceList(flatTimes, nhTimes) {
         const raceItem = document.createElement('div');
         raceItem.className = 'track-item';
         const raceLinks = times.map(time => {
-            return `<a href="ratings.html" onclick="loadRatings('${track}', '${time}')">${time}</a>`;
+            return `<a href="ratings.html?track=${encodeURIComponent(track)}&time=${encodeURIComponent(time)}">${time}</a>`;
         }).join(', ');
         raceItem.innerHTML = `${track}: ${raceLinks}`;
         raceList.appendChild(raceItem);
-    }
-}
-
-function loadRatings(track, time) {
-    const ratingsBody = document.getElementById('ratingsBody');
-    ratingsBody.innerHTML = ''; // Clear previous data
-
-    // Retrieve race data from localStorage
-    const raceData = JSON.parse(localStorage.getItem('raceData'));
-    console.log("Loaded race data from localStorage:", raceData);
-
-    if (raceData) {
-        raceData.forEach(row => {
-            // Check if both track and time match
-            if (row[1] === track && row[0] === time) {
-                const newRow = document.createElement('tr');
-                row.forEach(cell => {
-                    const newCell = document.createElement('td');
-                    newCell.textContent = cell; // Display cell content
-                    newRow.appendChild(newCell);
-                });
-                ratingsBody.appendChild(newRow); // Append the row to the table body
-            }
-        });
-    } else {
-        console.error("No race data found in localStorage!");
     }
 }

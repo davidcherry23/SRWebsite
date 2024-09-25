@@ -1,5 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM fully loaded and parsed");
+    
+    // Log the available DOM elements for debugging
+    console.log("Available DOM elements:", document.body.innerHTML);
 
     const uploadForm = document.getElementById('uploadForm');
     if (!uploadForm) {

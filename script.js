@@ -17,7 +17,7 @@ async function fetchData(sheetName) {
 async function loadRaceList() {
     const flatData = await fetchData('FLAT');
     const nhData = await fetchData('NH');
-    
+
     const raceList = {}; // Use an object to group by track
 
     // Process FLAT data
@@ -26,9 +26,9 @@ async function loadRaceList() {
         const time = row[0];
         const track = row[1];
         if (!raceList[track]) {
-            raceList[track] = [];
+            raceList[track] = new Set(); // Use a Set to avoid duplicate times
         }
-        raceList[track].push(time); // Add time to the respective track
+        raceList[track].add(time); // Add time to the Set
     });
 
     // Process NH data
@@ -37,35 +37,19 @@ async function loadRaceList() {
         const time = row[0];
         const track = row[1];
         if (!raceList[track]) {
-            raceList[track] = [];
+            raceList[track] = new Set(); // Use a Set to avoid duplicate times
         }
-        raceList[track].push(time); // Add time to the respective track
+        raceList[track].add(time); // Add time to the Set
     });
 
-    displayRaceList(raceList); // Pass the entire object to display
-}
-
-function displayRaceList(data) {
+    // Create the HTML for the race list
     const raceListDiv = document.getElementById('raceList');
-    raceListDiv.innerHTML = ''; // Clear existing race list
-
-    // Create race list based on grouped data
-    for (const track in data) {
-        const trackDiv = document.createElement('div');
-        trackDiv.innerHTML = `<strong>${track}</strong>`; // Track name as a heading
-        const timeList = document.createElement('div');
-
-        data[track].forEach(time => {
-            const raceItem = document.createElement('a');
-            raceItem.href = `ratings.html?time=${time}&track=${encodeURIComponent(track)}`; // Link to ratings page
-            raceItem.innerHTML = ` ${time}`;
-            timeList.appendChild(raceItem);
-        });
-
-        trackDiv.appendChild(timeList);
-        raceListDiv.appendChild(trackDiv); // Append track and time list to the main div
+    for (const track in raceList) {
+        const times = Array.from(raceList[track]); // Convert Set back to array
+        const timesHTML = times.map(time => `<a href="ratings.html?track=${encodeURIComponent(track)}&time=${encodeURIComponent(time)}">${time}</a>`).join(' ');
+        raceListDiv.innerHTML += `<div><strong>${track}</strong> ${timesHTML}</div>`;
     }
 }
 
-// Load the race list when the DOM is fully loaded
-document.addEventListener('DOMContentLoaded', loadRaceList);
+// Call the loadRaceList function to populate the page
+loadRaceList();
